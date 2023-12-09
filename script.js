@@ -246,8 +246,9 @@ function drawDisplacement() {
 
   textSize(24);
   let wheel1 = wheelById('wheel1')
+  let posXWholeNumber = 0;
   if (wheel1.pos != undefined) {
-    const posXWholeNumber = Math.floor(wheel1.pos.x / 100);
+    posXWholeNumber = Math.floor(wheel1.pos.x / 100);
     textAlign(CENTER, CENTER); // Center the text
     text("Displacement: " + posXWholeNumber, width / 2, height / 2 - 20); // Display text at the center of the canvas
   }
@@ -259,6 +260,9 @@ function drawDisplacement() {
   // Draw the second text below the first one with the calculated time
 
   text("Time: " + timeInSeconds + " seconds", width / 2, height / 2 + 20);
+
+  averageVelocity = posXWholeNumber / timeInSeconds;
+  text("Average Velocity: " + floor(averageVelocity * 100) / 100 + " m/s", width / 2, height / 2 + 40);
 }
 
 // Declare variables outside the draw function
