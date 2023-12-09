@@ -73,7 +73,8 @@ function draw() {
   drawWheels(scroll);
   drawConnections(scroll);
   drawStats();
-  drawGraph();
+  drawDisplacementGraph();
+  drawVelocityGraph();
 
   if (pauseCalculation) {
     wheels.forEach((wheel) => {
@@ -293,6 +294,7 @@ let instantanousVelocity = 0;
 let pauseCalculation = false;
 let timeArray = [0];
 let displacementArray = [0];
+let velocityArray = [0]
 
 function claculateValues() {
   if (pauseCalculation) {
@@ -311,6 +313,7 @@ function claculateValues() {
   averageVelocity = floor((currectDisplacement / currentTime) * 100) / 100;
 
   instantanousVelocity = floor((currectDisplacement - previousDisplacement) * 100) / 100;
+  velocityArray.push(instantanousVelocity);
 }
 
 function drawStats() {
@@ -328,12 +331,16 @@ function drawStats() {
   text("Instantanous Velocity: " + instantanousVelocity + " m/s", width / 2, height / 2 + 60);
 }
 
-function drawGraph() {
+function drawDisplacementGraph() {
   let graphwidth = (width / 2) - 50;
   let graphHeight = (height / 2) - 50;
 
   // Draw axes
+
+  // x axis line
   line(50, graphHeight - 50, graphwidth - 50, graphHeight - 50);
+
+  // Y axis line
   line(50, 50, 50, graphHeight - 50);
 
   // Draw axis labels
@@ -367,6 +374,56 @@ function drawGraph() {
     if (i > 0 && timeArray.length > 1) {
       let prevX = map(timeArray[i - 1], 0, 200, 50, graphwidth - 50);
       let prevY = map(displacementArray[i - 1], 0, graphHeight - 100, graphHeight - 50, 50);
+
+      stroke(255, 0, 0); // red
+      line(prevX, prevY, x, y);
+    }
+  }
+}
+
+function drawVelocityGraph() {
+  let graphwidth = (width / 2) - 50;
+  let graphHeight = (height / 2) - 50;
+
+  print('width' + graphwidth);
+  print('height' + graphHeight);
+  // x axis line
+  line(graphwidth + 100, graphHeight - 50, width - 50, graphHeight - 50);
+  
+  // Y axis line
+  line(graphwidth + 100, 50, graphwidth + 100, graphHeight - 50);
+
+  // Draw axis labels
+  fill(0);
+  textSize(12);
+  textAlign(CENTER, CENTER);
+
+  // X-axis labels
+  for (let i = 0; i <= 200; i += 10) {
+    let x = map(i, 0, 200, graphwidth + 100, width - 50);
+    text(i, x, graphHeight - 30);
+  }
+  text('Time', graphwidth + 100, graphHeight - 20);
+
+  // Y-axis labels
+  for (let i = 0; i <= 20; i += 1) {
+    let y = map(i, 0, 20, graphHeight - 50, 50);
+    text(i, graphwidth + 30, y);
+  }
+  text('Velocity', graphwidth + 20, graphHeight / 2);
+
+  // Draw data points
+  for (let i = 0; i < timeArray.length; i++) {
+    let x = map(timeArray[i], 0, 200, graphwidth + 100,  width - 50);
+    let y = map(velocityArray[i], 0, 20, graphHeight - 50, 50);
+
+    stroke(0, 0, 255); // Set the fill color to blue
+    ellipse(x, y, 0.5, 0.5);
+
+    // Connect points with lines
+    if (i > 0 && timeArray.length > 1) {
+      let prevX = map(timeArray[i - 1], 0, 200, graphwidth + 100, width - 50);
+      let prevY = map(velocityArray[i - 1], 0, 20, graphHeight - 50, 50);
 
       stroke(255, 0, 0); // red
       line(prevX, prevY, x, y);
