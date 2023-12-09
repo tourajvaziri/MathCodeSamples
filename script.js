@@ -64,8 +64,8 @@ function getGroundHeight(x) {
 
 function draw() {
 
-    
-  
+
+
   background(40);
 
   let scroll = getScroll();
@@ -73,17 +73,16 @@ function draw() {
   drawWheels(scroll);
   drawConnections(scroll);
   drawStats();
+  drawGraph();
 
-  if (pauseCalculation)
-  {
+  if (pauseCalculation) {
     wheels.forEach((wheel) => {
       wheel.p = wheel.pos.copy();
     })
   }
-  else
-  {
+  else {
     applyVerlet(0.01);
-    
+
     for (let i = 0; i < 8; i++) {
       applyConstraints();
     }
@@ -96,7 +95,7 @@ function draw() {
 
 function keyPressed() {
   if (key === ' ') {
-   // paused = !paused;
+    // paused = !paused;
   }
   if (key === 'r') {
     groundHeights = {};
@@ -104,14 +103,14 @@ function keyPressed() {
     startTime = millis();
     elapsedTime = 0;
   }
-  if (key === 'p') {
-    if (pauseCalculation){
+  if (key === ' ') {
+    if (pauseCalculation) {
       pauseCalculation = false
     }
     else {
       pauseCalculation = true;
     }
-    
+
   }
 }
 
@@ -125,9 +124,9 @@ function applyVerlet(friction) {
 }
 
 function applyConstraints() {
-    wheels.forEach((wheel) => {
-      wheel.pos.add(createVector(0, 0.03));
-    });
+  wheels.forEach((wheel) => {
+    wheel.pos.add(createVector(0, 0.03));
+  });
 
   handleControls(0.1);
 
@@ -292,22 +291,22 @@ let averageVelocity = 0
 let previousDisplacement = 0;
 let instantanousVelocity = 0;
 let pauseCalculation = false;
+let timeArray = [0];
+let displacementArray = [0];
 
-function claculateValues()
-{
-  if (pauseCalculation)
-  {
+function claculateValues() {
+  if (pauseCalculation) {
     return;
   }
   let wheel1 = wheelById('wheel1')
   if (wheel1.pos != undefined) {
     previousDisplacement = currectDisplacement;
     currectDisplacement = Math.floor(wheel1.pos.x / 100);
+    displacementArray.push(currectDisplacement);
   }
 
-
-    currentTime = currentTime + 1;
-
+  currentTime = currentTime + 1;
+  timeArray.push(currentTime);
 
   averageVelocity = floor((currectDisplacement / currentTime) * 100) / 100;
 
@@ -315,12 +314,12 @@ function claculateValues()
 }
 
 function drawStats() {
-  
+
   fill(0); // Set the text color (black in this case)
   textSize(24);
   textAlign(CENTER, CENTER); // Center the text
   text("Displacement: " + currectDisplacement, width / 2, height / 2 - 20); // Display text at the center of the canvas
-  
+
   // Draw the second text below the first one with the calculated time
   text("Time: " + currentTime + " seconds", width / 2, height / 2 + 20);
 
@@ -329,69 +328,48 @@ function drawStats() {
   text("Instantanous Velocity: " + instantanousVelocity + " m/s", width / 2, height / 2 + 60);
 }
 
-
-
 function drawGraph() {
-  let wheel1 = wheelById('wheel1');
-  const ctx = document.getElementById("myCanvas").getContext("2d");
+  let graphwidth = (width / 2) - 50;
+  let graphHeight = (height / 2) - 50;
 
-  // Clear the entire canvas
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  // Draw axes
+  line(50, graphHeight - 50, graphwidth - 50, graphHeight - 50);
+  line(50, 50, 50, graphHeight - 50);
 
-  // Define time and displacement arrays (replace these with your actual data)
-  const timeArray = [0, 1, 2, 3, 4, 5];
-  const displacementArray = [0, 10, 20, 30, 40, 50];
+  // Draw axis labels
+  fill(0);
+  textSize(12);
+  textAlign(CENTER, CENTER);
 
-  // Set up the graph parameters
-  const scaleX = 50; // Horizontal scale factor
-  const scaleY = 10; // Vertical scale factor
-  const xOffset = 10; // X-axis offset
-  const yOffset = 200; // Y-axis offset
-
-  // Draw the line graph for displacement
-  ctx.beginPath();
-  ctx.moveTo(xOffset, yOffset - displacementArray[0] * scaleY);
-
-  for (let i = 1; i < timeArray.length; i++) {
-    const x = xOffset + timer * scaleX;
-    const y = yOffset - displacementArray[i] * scaleY;
-    ctx.lineTo(x, y);
-
-    // Increment the timer and update displacement
-    timer += timeArray[i];
-    displacement = displacementArray[i];
+  // X-axis labels
+  for (let i = 0; i <= 200; i += 10) {
+    let x = map(i, 0, 200, 50, graphwidth - 50);
+    text(i, x, graphHeight - 30);
   }
+  text('Time', graphwidth / 2, graphHeight - 20);
 
-  // Draw axes for displacement
-  ctx.moveTo(xOffset, yOffset);
-  ctx.lineTo(xOffset + timer * scaleX, yOffset);
-  ctx.moveTo(xOffset, 0);
-  ctx.lineTo(xOffset, yOffset);
-
-  // Stroke the path for displacement
-  ctx.stroke();
-
-  // Display time value separately
-  ctx.font = "14px serif";
-  ctx.fillText(`Time: ${timer} seconds`, 10, 20);
-
-  // Draw the line graph for the division of displacement and time
-  ctx.beginPath();
-  ctx.moveTo(xOffset, yOffset - (displacement / timer) * scaleY);
-
-  for (let i = 1; i < timeArray.length; i++) {
-    const x = xOffset + timer * scaleX;
-    const y = yOffset - (displacementArray[i] / timeArray[i]) * scaleY;
-    ctx.lineTo(x, y);
+  // Y-axis labels
+  for (let i = 0; i <= height - 100; i += 50) {
+    let y = map(i, 0, graphHeight - 100, graphHeight - 50, 50);
+    text(i, 30, y);
   }
+  text('Displacement', 20, graphHeight / 2);
 
-  // Draw axes for the division
-  ctx.moveTo(xOffset, yOffset);
-  ctx.lineTo(xOffset + timer * scaleX, yOffset);
-  ctx.moveTo(xOffset, 0);
-  ctx.lineTo(xOffset, yOffset);
+  // Draw data points
+  for (let i = 0; i < timeArray.length; i++) {
+    let x = map(timeArray[i], 0, 200, 50, graphwidth - 50);
+    let y = map(displacementArray[i], 0, graphHeight - 100, graphHeight - 50, 50);
 
-  // Stroke the path for the division
-  ctx.strokeStyle = "red"; // Change the color for clarity
-  ctx.stroke();
+    stroke(0, 0, 255); // Set the fill color to blue
+    ellipse(x, y, 0.5, 0.5);
+
+    // Connect points with lines
+    if (i > 0 && timeArray.length > 1) {
+      let prevX = map(timeArray[i - 1], 0, 200, 50, graphwidth - 50);
+      let prevY = map(displacementArray[i - 1], 0, graphHeight - 100, graphHeight - 50, 50);
+
+      stroke(255, 0, 0); // red
+      line(prevX, prevY, x, y);
+    }
+  }
 }
