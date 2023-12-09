@@ -19,6 +19,8 @@ function setup() {
   initializeCar();
 
   noiseSeed(0);
+
+  setInterval(claculateValues, 1000);
 }
 
 function initializeCar() {
@@ -61,39 +63,55 @@ function getGroundHeight(x) {
 }
 
 function draw() {
+
+    
+  
   background(40);
 
   let scroll = getScroll();
   drawGround(scroll, 8);
   drawWheels(scroll);
   drawConnections(scroll);
-  drawDisplacement();
+  drawStats();
 
-  if (!paused) {
-    applyVerlet(0.01);
-  } else {
+  if (pauseCalculation)
+  {
     wheels.forEach((wheel) => {
-      wheel.oldPos = wheel.pos.copy();
+      wheel.p = wheel.pos.copy();
     })
   }
-  for (let i = 0; i < 8; i++) {
-    applyConstraints();
+  else
+  {
+    applyVerlet(0.01);
+    
+    for (let i = 0; i < 8; i++) {
+      applyConstraints();
+    }
   }
 
-  if (mouseIsPressed) {
-    addGround(scroll.x + mouseX, (keyIsDown(SHIFT) ? -1 : 1) * 2, 100);
-  }
+  //if (mouseIsPressed) {
+  //  addGround(scroll.x + mouseX, (keyIsDown(SHIFT) ? -1 : 1) * 2, 100);
+  //}
 }
 
 function keyPressed() {
   if (key === ' ') {
-    paused = !paused;
+   // paused = !paused;
   }
   if (key === 'r') {
     groundHeights = {};
     initializeCar();
     startTime = millis();
     elapsedTime = 0;
+  }
+  if (key === 'p') {
+    if (pauseCalculation){
+      pauseCalculation = false
+    }
+    else {
+      pauseCalculation = true;
+    }
+    
   }
 }
 
@@ -107,11 +125,9 @@ function applyVerlet(friction) {
 }
 
 function applyConstraints() {
-  if (!paused) {
     wheels.forEach((wheel) => {
       wheel.pos.add(createVector(0, 0.03));
     });
-  }
 
   handleControls(0.1);
 
@@ -239,31 +255,29 @@ function drawConnections(scroll) {
   });
 }
 
-function drawDisplacement() {
-  // Draw text on the canvas
-  textSize(32); // Set the text size
-  fill(0); // Set the text color (black in this case)
+function getScroll() {
+  let avgWheelPos = createVector(0, 0);
+  wheels.forEach((wheel) => {
+    avgWheelPos.add(wheel.pos);
+  });
+  avgWheelPos.div(wheels.length);
 
-  textSize(24);
-  let wheel1 = wheelById('wheel1')
-  let posXWholeNumber = 0;
-  if (wheel1.pos != undefined) {
-    posXWholeNumber = Math.floor(wheel1.pos.x / 100);
-    textAlign(CENTER, CENTER); // Center the text
-    text("Displacement: " + posXWholeNumber, width / 2, height / 2 - 20); // Display text at the center of the canvas
-  }
-
-  // Calculate elapsed time since the reset
-  elapsedTime = millis() - startTime;
-  let timeInSeconds = floor(elapsedTime / 1000);
-
-  // Draw the second text below the first one with the calculated time
-
-  text("Time: " + timeInSeconds + " seconds", width / 2, height / 2 + 20);
-
-  averageVelocity = posXWholeNumber / timeInSeconds;
-  text("Average Velocity: " + floor(averageVelocity * 100) / 100 + " m/s", width / 2, height / 2 + 40);
+  return createVector(avgWheelPos.x - width / 2, avgWheelPos.y - constrain(avgWheelPos.y, 80, height - 80));
 }
+
+function addGround(x, amount, spread) {
+  for (let xOffset = -spread; xOffset <= spread; xOffset += 1) {
+    groundHeights[round(x + xOffset)] = getGroundHeight(round(x + xOffset)) - (xOffset < 0 ? easeInOutCubic(0, amount, (spread + xOffset) / spread) : easeInOutCubic(amount, 0, xOffset / spread));
+  }
+}
+
+function easeInOutCubic(a, b, t) {
+  return lerp(a, b, t < 0.5 ? 4 * t ** 3 : 1 - pow(-2 * t + 2, 2) / 2);
+}
+
+
+
+//************** My code *********** ///////
 
 // Declare variables outside the draw function
 let startTime;
@@ -271,6 +285,51 @@ let elapsedTime = 0;
 
 let timer = 0;
 let displacement = 0;
+
+let currectDisplacement = 0;
+let currentTime = 0
+let averageVelocity = 0
+let previousDisplacement = 0;
+let instantanousVelocity = 0;
+let pauseCalculation = false;
+
+function claculateValues()
+{
+  if (pauseCalculation)
+  {
+    return;
+  }
+  let wheel1 = wheelById('wheel1')
+  if (wheel1.pos != undefined) {
+    previousDisplacement = currectDisplacement;
+    currectDisplacement = Math.floor(wheel1.pos.x / 100);
+  }
+
+
+    currentTime = currentTime + 1;
+
+
+  averageVelocity = floor((currectDisplacement / currentTime) * 100) / 100;
+
+  instantanousVelocity = floor((currectDisplacement - previousDisplacement) * 100) / 100;
+}
+
+function drawStats() {
+  
+  fill(0); // Set the text color (black in this case)
+  textSize(24);
+  textAlign(CENTER, CENTER); // Center the text
+  text("Displacement: " + currectDisplacement, width / 2, height / 2 - 20); // Display text at the center of the canvas
+  
+  // Draw the second text below the first one with the calculated time
+  text("Time: " + currentTime + " seconds", width / 2, height / 2 + 20);
+
+  text("Average Velocity: " + averageVelocity + " m/s", width / 2, height / 2 + 40);
+
+  text("Instantanous Velocity: " + instantanousVelocity + " m/s", width / 2, height / 2 + 60);
+}
+
+
 
 function drawGraph() {
   let wheel1 = wheelById('wheel1');
@@ -335,24 +394,4 @@ function drawGraph() {
   // Stroke the path for the division
   ctx.strokeStyle = "red"; // Change the color for clarity
   ctx.stroke();
-}
-
-function getScroll() {
-  let avgWheelPos = createVector(0, 0);
-  wheels.forEach((wheel) => {
-    avgWheelPos.add(wheel.pos);
-  });
-  avgWheelPos.div(wheels.length);
-
-  return createVector(avgWheelPos.x - width / 2, avgWheelPos.y - constrain(avgWheelPos.y, 80, height - 80));
-}
-
-function addGround(x, amount, spread) {
-  for (let xOffset = -spread; xOffset <= spread; xOffset += 1) {
-    groundHeights[round(x + xOffset)] = getGroundHeight(round(x + xOffset)) - (xOffset < 0 ? easeInOutCubic(0, amount, (spread + xOffset) / spread) : easeInOutCubic(amount, 0, xOffset / spread));
-  }
-}
-
-function easeInOutCubic(a, b, t) {
-  return lerp(a, b, t < 0.5 ? 4 * t ** 3 : 1 - pow(-2 * t + 2, 2) / 2);
 }
