@@ -107,7 +107,7 @@ function keyPressed() {
     pauseCalculation = false;
     timeArray = [0];
     displacementArray = [0];
-    velocityArray = [0];    
+    velocityArray = [0];
   }
   if (key === ' ') {
     if (pauseCalculation) {
@@ -305,15 +305,15 @@ function easeInOutCubic(a, b, t) {
 //************** My code *********** ///////
 
 // Declare variables outside the draw function
-let currectDisplacement = 0;
+let currectDisplacement = 0.0;
 let currentTime = 0
-let averageVelocity = 0
-let previousDisplacement = 0;
-let instantanousVelocity = 0;
+let averageVelocity = 0.0
+let previousDisplacement = 0.0;
+let instantanousVelocity = 0.0;
 let pauseCalculation = false;
 let timeArray = [0];
-let displacementArray = [0];
-let velocityArray = [0];
+let displacementArray = [0.0];
+let velocityArray = [0.0];
 let moveSpeed = 1;
 
 function claculateValues() {
@@ -326,15 +326,15 @@ function claculateValues() {
   let wheel1 = wheelById('wheel1')
   if (wheel1.pos != undefined) {
     previousDisplacement = currectDisplacement;
-    currectDisplacement = Math.floor(wheel1.pos.x / 100);
+    currectDisplacement = wheel1.pos.x / 100;
     displacementArray.push(currectDisplacement);
 
     currentTime = currentTime + 1;
     timeArray.push(currentTime);
 
-    averageVelocity = Math.floor((currectDisplacement / currentTime) * 100) / 100;
+    averageVelocity = currectDisplacement / currentTime;
 
-    instantanousVelocity = Math.floor((currectDisplacement - previousDisplacement) * 100) / 100;
+    instantanousVelocity = currectDisplacement - previousDisplacement;
     velocityArray.push(instantanousVelocity);
   }
 }
@@ -364,14 +364,14 @@ function drawStats() {
   fill(0); // Set the text color (black in this case)
   textSize(24);
   textAlign(LEFT, RIGHT); // Align the text to the left
-  text("Displacement: " + currectDisplacement + " m", 50, height / 2 - 20); // Display text at the center of the canvas
+  text("Displacement: " + currectDisplacement.toFixed(4) + " m", 50, height / 2 - 20); // Display text at the center of the canvas
 
   // Draw the second text below the first one with the calculated time
   text("Time: " + currentTime + " seconds", 50, height / 2 + 20);
 
   // text("Average Velocity: " + averageVelocity + " m/s", width / 2, height / 2 + 40);
 
-  text("Instantanous Velocity: " + instantanousVelocity + " m/s", 50, height / 2 + 60);
+  text("Instantanous Velocity: " + instantanousVelocity.toFixed(4) + " m/s", 50, height / 2 + 60);
 }
 
 function drawDisplacementGraph() {
