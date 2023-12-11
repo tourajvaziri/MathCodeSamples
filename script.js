@@ -79,7 +79,7 @@ function draw() {
     })
   }
   else {
-    applyVerlet(0.01);
+    applyVerlet(0.005);
 
     for (let i = 0; i < 8; i++) {
       applyConstraints();
@@ -109,7 +109,7 @@ function keyPressed() {
     }
   }
   if (key === 'w') {
-    if (moveSpeed < 10) {
+    if (moveSpeed < 4) {
       moveSpeed = moveSpeed + 1;
     }
   }
@@ -310,21 +310,20 @@ let velocityArray = [0.0];
 let accelerationArray = [0.0];
 let moveSpeed = 1;
 
-function initializeValues()
-{
-   currentDisplacement = 0.0;
-   currentTime = 0
-   averageVelocity = 0.0
-   previousDisplacement = 0.0;
-   previousVelocity = 0.0;
-   instantanousVelocity = 0.0;
-   instantanousAcceleration = 0.0;
-   pauseCalculation = false;
-   timeArray = [0];
-   displacementArray = [0.0];
-   velocityArray = [0.0];
-   accelerationArray = [0.0];
-   moveSpeed = 1;
+function initializeValues() {
+  currentDisplacement = 0.0;
+  currentTime = 0
+  averageVelocity = 0.0
+  previousDisplacement = 0.0;
+  previousVelocity = 0.0;
+  instantanousVelocity = 0.0;
+  instantanousAcceleration = 0.0;
+  pauseCalculation = false;
+  timeArray = [0];
+  displacementArray = [0.0];
+  velocityArray = [0.0];
+  accelerationArray = [0.0];
+  moveSpeed = 1;
 }
 
 
@@ -382,7 +381,7 @@ function drawStats() {
   fill(0); // Set the text color (black in this case)
   textSize(24);
   textAlign(LEFT, RIGHT); // Align the text to the left
-  
+
   fill(255, 0, 0);
   text("Displacement: " + currentDisplacement.toFixed(4) + " m", xpistion, yposition + 20); // Display text at the center of the canvas
 
@@ -392,13 +391,13 @@ function drawStats() {
   fill(0, 255, 0);
   text("Instantanous Acceleration: " + instantanousAcceleration.toFixed(4) + " m/s^2", xpistion, yposition + 100);
 
-  fill(0); 
+  fill(0);
   text("Time: " + currentTime + " seconds", xpistion, yposition + 140);
 }
 
 function drawDisplacementGraph() {
   let graphwidth = width - 50;
-  let graphHeight = height - 50;
+  let graphHeight = height - 100;
 
   // Draw axes
 
@@ -413,16 +412,19 @@ function drawDisplacementGraph() {
   textSize(12);
   textAlign(CENTER, CENTER);
 
+  let YValuesRange = 50
+  let XValuesRange = 100
+
   // X-axis labels
-  for (let i = 0; i <= 200; i += 10) {
-    let x = map(i, 0, 200, 50, graphwidth - 50);
+  for (let i = 0; i <= XValuesRange; i += 10) {
+    let x = map(i, 0, XValuesRange, 50, graphwidth - 50);
     text(i, x, graphHeight - 30);
   }
   text('Time', graphwidth - 30, graphHeight - 50);
 
   // Y-axis labels
-  for (let i = 0; i <= 200; i += 50) {
-    let y = map(i, 0, 200, graphHeight - 50, 50);
+  for (let i = 0; i <= YValuesRange; i += 10) {
+    let y = map(i, 0, YValuesRange, graphHeight - 50, 50);
     text(i, 30, y);
   }
   // text('Displacement', 50, 30);
@@ -432,20 +434,20 @@ function drawDisplacementGraph() {
 
   // Draw data points
   for (let i = 0; i < timeArray.length; i++) {
-    let x = map(timeArray[i], 0, 200, 50, graphwidth - 50);
-    let y = map(displacementArray[i], 0, 200, graphHeight - 50, 50);
-    let z = map(velocityArray[i], 0, 200, graphHeight - 50, 50);
-    let a = map(accelerationArray[i], 0, 200, graphHeight - 50, 50);
+    let x = map(timeArray[i], 0, XValuesRange, 50, graphwidth - 50);
+    let y = map(displacementArray[i], 0, YValuesRange, graphHeight - 50, 50);
+    let z = map(velocityArray[i], 0, YValuesRange, graphHeight - 50, 50);
+    let a = map(accelerationArray[i], 0, YValuesRange, graphHeight - 50, 50);
 
     //   stroke(0, 0, 255); // Set the fill color to blue
     //  ellipse(x, y, 0.5, 0.5);
 
     // Connect points with lines
     if (i > 0 && timeArray.length > 1 && velocityArray.length > 1 && accelerationArray.length > 1) {
-      let prevX = map(timeArray[i - 1], 0, 200, 50, graphwidth - 50);
-      let prevY = map(displacementArray[i - 1], 0, 200, graphHeight - 50, 50);
-      let prevZ = map(velocityArray[i - 1], 0, 200, graphHeight - 50, 50);
-      let prevA = map(accelerationArray[i - 1], 0, 200, graphHeight - 50, 50);
+      let prevX = map(timeArray[i - 1], 0, XValuesRange, 50, graphwidth - 50);
+      let prevY = map(displacementArray[i - 1], 0, YValuesRange, graphHeight - 50, 50);
+      let prevZ = map(velocityArray[i - 1], 0, YValuesRange, graphHeight - 50, 50);
+      let prevA = map(accelerationArray[i - 1], 0, YValuesRange, graphHeight - 50, 50);
 
       stroke(255, 0, 0); // red
       line(prevX, prevY, x, y);
