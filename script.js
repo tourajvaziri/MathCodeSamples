@@ -407,7 +407,7 @@ function drawStats() {
   fill(0);
   text("Time: " + currentTime + " seconds", xpistion, yposition + 140);
 
-  image(img, width - 70, height - 160, img.width / 2, img.height / 2); // displaying the image at half size
+  image(img, width - 60, height - 120, img.width / 3, img.height / 3); // displaying the image at half size
 
   image(img2, 10, height - 120, img.width / 3, img.height / 3); // displaying the image at half size
 }
