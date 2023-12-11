@@ -79,7 +79,7 @@ function draw() {
     })
   }
   else {
-    applyVerlet(0.005);
+    applyVerlet(0.01);
 
     for (let i = 0; i < 8; i++) {
       applyConstraints();
@@ -297,33 +297,35 @@ function easeInOutCubic(a, b, t) {
 
 // Declare variables outside the draw function
 let currentDisplacement = 0.0;
-let currentTime = 0
+let currentTime = 0.0
 let averageVelocity = 0.0
 let previousDisplacement = 0.0;
 let previousVelocity = 0.0;
 let instantanousVelocity = 0.0;
 let instantanousAcceleration = 0.0;
 let pauseCalculation = false;
-let timeArray = [0];
+let timeArray = [0.0];
 let displacementArray = [0.0];
 let velocityArray = [0.0];
 let accelerationArray = [0.0];
-let moveSpeed = 1;
+let moveSpeed = 1.0;
+let startTime = new Date().getTime();
 
 function initializeValues() {
   currentDisplacement = 0.0;
-  currentTime = 0
+  currentTime = 0.0;
   averageVelocity = 0.0
   previousDisplacement = 0.0;
   previousVelocity = 0.0;
   instantanousVelocity = 0.0;
   instantanousAcceleration = 0.0;
   pauseCalculation = false;
-  timeArray = [0];
+  timeArray = [0.0];
   displacementArray = [0.0];
   velocityArray = [0.0];
   accelerationArray = [0.0];
-  moveSpeed = 1;
+  moveSpeed = 1.0;
+  startTime = new Date().getTime();
 }
 
 
@@ -340,6 +342,7 @@ function claculateValues() {
     currentDisplacement = wheel1.pos.x / 100;
     displacementArray.push(currentDisplacement);
 
+    // currentTime = (new Date().getTime() - startTime) / 1000; // in seconds
     currentTime = currentTime + 1;
     timeArray.push(currentTime);
 
