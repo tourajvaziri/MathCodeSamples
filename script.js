@@ -71,7 +71,7 @@ function draw() {
   drawConnections(scroll);
   drawStats();
   drawDisplacementGraph();
-  drawVelocityGraph();
+  //drawVelocityGraph();
 
   if (pauseCalculation) {
     wheels.forEach((wheel) => {
@@ -98,16 +98,7 @@ function keyPressed() {
   if (key === 'r') {
     groundHeights = {};
     initializeCar();
-    moveSpeed = 1;
-    currectDisplacement = 0;
-    currentTime = 0
-    averageVelocity = 0
-    previousDisplacement = 0;
-    instantanousVelocity = 0;
-    pauseCalculation = false;
-    timeArray = [0];
-    displacementArray = [0];
-    velocityArray = [0];
+    initializeValues();
   }
   if (key === ' ') {
     if (pauseCalculation) {
@@ -118,7 +109,7 @@ function keyPressed() {
     }
   }
   if (key === 'w') {
-    if (moveSpeed < 20) {
+    if (moveSpeed < 10) {
       moveSpeed = moveSpeed + 1;
     }
   }
@@ -305,16 +296,37 @@ function easeInOutCubic(a, b, t) {
 //************** My code *********** ///////
 
 // Declare variables outside the draw function
-let currectDisplacement = 0.0;
+let currentDisplacement = 0.0;
 let currentTime = 0
 let averageVelocity = 0.0
 let previousDisplacement = 0.0;
+let previousVelocity = 0.0;
 let instantanousVelocity = 0.0;
+let instantanousAcceleration = 0.0;
 let pauseCalculation = false;
 let timeArray = [0];
 let displacementArray = [0.0];
 let velocityArray = [0.0];
+let accelerationArray = [0.0];
 let moveSpeed = 1;
+
+function initializeValues()
+{
+   currentDisplacement = 0.0;
+   currentTime = 0
+   averageVelocity = 0.0
+   previousDisplacement = 0.0;
+   previousVelocity = 0.0;
+   instantanousVelocity = 0.0;
+   instantanousAcceleration = 0.0;
+   pauseCalculation = false;
+   timeArray = [0];
+   displacementArray = [0.0];
+   velocityArray = [0.0];
+   accelerationArray = [0.0];
+   moveSpeed = 1;
+}
+
 
 function claculateValues() {
   if (pauseCalculation) {
@@ -325,17 +337,21 @@ function claculateValues() {
 
   let wheel1 = wheelById('wheel1')
   if (wheel1.pos != undefined) {
-    previousDisplacement = currectDisplacement;
-    currectDisplacement = wheel1.pos.x / 100;
-    displacementArray.push(currectDisplacement);
+    previousDisplacement = currentDisplacement;
+    currentDisplacement = wheel1.pos.x / 100;
+    displacementArray.push(currentDisplacement);
 
     currentTime = currentTime + 1;
     timeArray.push(currentTime);
 
-    averageVelocity = currectDisplacement / currentTime;
+    averageVelocity = currentDisplacement / currentTime;
 
-    instantanousVelocity = currectDisplacement - previousDisplacement;
+    previousVelocity = instantanousVelocity;
+    instantanousVelocity = currentDisplacement - previousDisplacement;
     velocityArray.push(instantanousVelocity);
+
+    instantanousAcceleration = instantanousVelocity - previousVelocity;
+    accelerationArray.push(instantanousAcceleration);
   }
 }
 
@@ -361,22 +377,28 @@ function handleControlsNew() {
 
 function drawStats() {
 
+  let xpistion = width - 500
+  let yposition = 30
   fill(0); // Set the text color (black in this case)
   textSize(24);
   textAlign(LEFT, RIGHT); // Align the text to the left
-  text("Displacement: " + currectDisplacement.toFixed(4) + " m", 50, height / 2 - 20); // Display text at the center of the canvas
+  
+  fill(255, 0, 0);
+  text("Displacement: " + currentDisplacement.toFixed(4) + " m", xpistion, yposition + 20); // Display text at the center of the canvas
 
-  // Draw the second text below the first one with the calculated time
-  text("Time: " + currentTime + " seconds", 50, height / 2 + 20);
+  fill(0, 0, 255);
+  text("Instantanous Velocity: " + instantanousVelocity.toFixed(4) + " m/s", xpistion, yposition + 60);
 
-  // text("Average Velocity: " + averageVelocity + " m/s", width / 2, height / 2 + 40);
+  fill(0, 255, 0);
+  text("Instantanous Acceleration: " + instantanousAcceleration.toFixed(4) + " m/s^2", xpistion, yposition + 100);
 
-  text("Instantanous Velocity: " + instantanousVelocity.toFixed(4) + " m/s", 50, height / 2 + 60);
+  fill(0); 
+  text("Time: " + currentTime + " seconds", xpistion, yposition + 140);
 }
 
 function drawDisplacementGraph() {
-  let graphwidth = (width / 2) - 50;
-  let graphHeight = (height / 2) - 50;
+  let graphwidth = width - 50;
+  let graphHeight = height - 50;
 
   // Draw axes
 
@@ -403,23 +425,37 @@ function drawDisplacementGraph() {
     let y = map(i, 0, 200, graphHeight - 50, 50);
     text(i, 30, y);
   }
-  text('Displacement', 50, 30);
+  // text('Displacement', 50, 30);
+
+
+
 
   // Draw data points
   for (let i = 0; i < timeArray.length; i++) {
     let x = map(timeArray[i], 0, 200, 50, graphwidth - 50);
     let y = map(displacementArray[i], 0, 200, graphHeight - 50, 50);
+    let z = map(velocityArray[i], 0, 200, graphHeight - 50, 50);
+    let a = map(accelerationArray[i], 0, 200, graphHeight - 50, 50);
 
     //   stroke(0, 0, 255); // Set the fill color to blue
     //  ellipse(x, y, 0.5, 0.5);
 
     // Connect points with lines
-    if (i > 0 && timeArray.length > 1) {
+    if (i > 0 && timeArray.length > 1 && velocityArray.length > 1 && accelerationArray.length > 1) {
       let prevX = map(timeArray[i - 1], 0, 200, 50, graphwidth - 50);
       let prevY = map(displacementArray[i - 1], 0, 200, graphHeight - 50, 50);
+      let prevZ = map(velocityArray[i - 1], 0, 200, graphHeight - 50, 50);
+      let prevA = map(accelerationArray[i - 1], 0, 200, graphHeight - 50, 50);
 
       stroke(255, 0, 0); // red
       line(prevX, prevY, x, y);
+
+      stroke(0, 0, 255); // blue
+      line(prevX, prevZ, x, z);
+
+      stroke(0, 255, 0); // green
+      line(prevX, prevA, x, a);
+
       stroke(primaryStroke);
     }
   }
